@@ -14,7 +14,7 @@ from google.genai import types
 
 client = genai.Client()
 
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-3.1-flash-lite"
 
 SYSTEM_INSTRUCTION = (
     "Bạn là trợ lý thời tiết thân thiện, trả lời bằng tiếng Việt tự nhiên. "
@@ -44,6 +44,18 @@ TOOLS = [types.Tool(function_declarations=[get_weather_declaration])]
 # 2. App tự thực thi tool (trong thực tế sẽ gọi API thời tiết thật)
 def get_weather(city: str) -> str:
     """Trả về thời tiết (mock) của *city*. Dùng làm tool cho model."""
+    city_aliases = {
+        "hanoi": "Hà Nội",
+        "ha noi": "Hà Nội",
+        "hà nội": "Hà Nội",
+        "da nang": "Đà Nẵng",
+        "danang": "Đà Nẵng",
+        "đà nẵng": "Đà Nẵng",
+        "ho chi minh": "Hồ Chí Minh",
+        "ho chi minh city": "Hồ Chí Minh",
+        "hồ chí minh": "Hồ Chí Minh",
+    }
+    city_key = city_aliases.get(city.strip().lower(), city)
     mock_data = {
         "Hà Nội": {
             "nhiệt_độ": "29°C",
@@ -67,7 +79,7 @@ def get_weather(city: str) -> str:
     import json
 
     default = {"nhiệt_độ": "28°C", "thời_tiết": "không có dữ liệu chi tiết"}
-    return json.dumps({"city": city, **mock_data.get(city, default)}, ensure_ascii=False)
+    return json.dumps({"city": city_key, **mock_data.get(city_key, default)}, ensure_ascii=False)
 
 
 def run(prompt: str) -> str:
